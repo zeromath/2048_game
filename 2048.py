@@ -194,5 +194,4 @@ while True:
                 map.move(MAP_LEFT)
             elif event.key == K_RIGHT:
                 map.move(MAP_RIGHT)
-            clock.tick(30)
             show(map, screen)
