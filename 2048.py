@@ -133,7 +133,10 @@ def show(map, screen):
     
     # draw scoreboard
     screen.blit(score_block, (0, 0))
-    score_text = score_font.render(("Score: ") + str(map.score), True, (106, 90, 205))
+    if map.is_over():
+        score_text = score_font.render(("Game Over! Your final score is ") + str(map.score), True, (106, 90, 205))
+    else:
+        score_text = score_font.render(("Score: ") + str(map.score), True, (106, 90, 205))
     score_rect = score_text.get_rect()
     score_rect.center = (PIXEL_SIZE * MAP_SIZE / 2, SCORE_HEIGHT / 2)
     screen.blit(score_text, score_rect)
@@ -157,7 +160,7 @@ score_font = pygame.font.Font(None, int(SCORE_HEIGHT * 2 / 3))
 
 show(map, screen)
 
-while not map.is_over():
+while True:
     for event in pygame.event.get():
         if event.type == QUIT:
             pygame.quit()
