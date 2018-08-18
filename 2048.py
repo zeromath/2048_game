@@ -3,13 +3,15 @@ import random
 from pygame.locals import *
 from sys import exit
 
+# markers for map_rotation
 MAP_LEFT = 0
 MAP_RIGHT = 1
 MAP_UP = 2
 MAP_DOWN = 3
 
-PIXEL = 150
-SIZE = 4
+PIXEL_SIZE   = 150  # dimension of blocks
+MAP_SIZE     = 4    # number of blocks
+SCORE_HEIGHT = 50   # scoreboard height
 
 COLOR = [(255, 250, 240), (255, 239, 213), (255, 222, 173), (255, 215, 0), (255, 193, 37), (255, 185, 15), (238, 173, 14), (205, 149, 12)]
 
@@ -32,7 +34,6 @@ class Map_2048:
             y_pos = random.randint(0, self.size - 1)
             if self.map[x_pos][y_pos] == 0:
                 self.map[x_pos][y_pos] = new_element
-                self.score += new_element
                 break;
         
     def set_element(self, i, j, new_value):
@@ -70,6 +71,7 @@ class Map_2048:
             while j < len(current_row) - 1:
                 if current_row[j] == current_row[j + 1]:
                     new_row.append(current_row[j] + 1)
+                    self.score += 2 ** (current_row[j] + 1)
                     j += 1
                 else:
                     new_row.append(current_row[j])
@@ -104,11 +106,12 @@ class Map_2048:
         self.rotation = symbol
         if self.key_move():
             self.generate_new()
-  #      return self.is_over()
 
     def print_map(self):
         for i in range(self.size):
             print(self.map[i])
+            
+# end of class-definition
 
 def get_color(map, i, j):
     if map.map[i][j] == 0:
@@ -119,31 +122,38 @@ def get_color(map, i, j):
 def show(map, screen):
     for i in range(map.size):
         for j in range(map.size):
-            # 背景颜色块
-            pygame.draw.rect(screen, get_color(map, i, j), (PIXEL * j, PIXEL * i, PIXEL, PIXEL), 0)
-            # 数值显示
+            # draw blocks for each block
+            pygame.draw.rect(screen, get_color(map, i, j), (PIXEL_SIZE * j, SCORE_HEIGHT + PIXEL_SIZE * i, PIXEL_SIZE, PIXEL_SIZE), 0)
+            # draw the numbers
             if map.map[i][j] != 0:
-                map_text = map_font.render(str(2 ** map.map[i][j]), True, (106, 90, 205))
-                text_rect = map_text.get_rect()
-                text_rect.center = (PIXEL * j + PIXEL / 2, PIXEL * i + PIXEL / 2)
-                screen.blit(map_text, text_rect)
-    # 分数显示
-#    screen.blit(score_block, (0, PIXEL * SIZE))
-#    score_text = score_font.render((map.over() and "Game over with score " or "Score: ") + str(map.score), True, (106, 90, 205))
-#    score_rect = score_text.get_rect()
-#    score_rect.center = (PIXEL * SIZE / 2, PIXEL * SIZE + SCORE_PIXEL / 2)
-#    screen.blit(score_text, score_rect)
+                number_text = number_font.render(str(2 ** map.map[i][j]), True, (106, 90, 205))
+                text_rect = number_text.get_rect()
+                text_rect.center = (PIXEL_SIZE * j + PIXEL_SIZE / 2, SCORE_HEIGHT + PIXEL_SIZE * i + PIXEL_SIZE / 2)
+                screen.blit(number_text, text_rect)
+    
+    # draw scoreboard
+    screen.blit(score_block, (0, 0))
+    score_text = score_font.render(("Score: ") + str(map.score), True, (106, 90, 205))
+    score_rect = score_text.get_rect()
+    score_rect.center = (PIXEL_SIZE * MAP_SIZE / 2, SCORE_HEIGHT / 2)
+    screen.blit(score_text, score_rect)
     pygame.display.update()
             
 pygame.init()
-map = Map_2048(SIZE)
+map = Map_2048(MAP_SIZE)
 
-screen = pygame.display.set_mode((PIXEL * SIZE, PIXEL * SIZE))
+screen = pygame.display.set_mode((PIXEL_SIZE * MAP_SIZE, SCORE_HEIGHT + PIXEL_SIZE * MAP_SIZE))
 pygame.display.set_caption("2048")
 
-# 设置字体
-map_font = pygame.font.Font(None, int(PIXEL * 2 / 3))
-#score_font = pygame.font.Font(None, int(SCORE_PIXEL * 2 / 3))
+# score display block
+score_block = pygame.Surface((PIXEL_SIZE * MAP_SIZE, SCORE_HEIGHT))
+score_block.fill((245, 245, 245))
+
+# set the font size for numbers in the map
+number_font = pygame.font.Font(None, int(PIXEL_SIZE * 2 / 3))
+
+# set the font size for the score
+score_font = pygame.font.Font(None, int(SCORE_HEIGHT * 2 / 3))
 
 show(map, screen)
 
