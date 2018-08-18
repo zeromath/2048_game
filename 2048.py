@@ -18,6 +18,11 @@ COLOR = [(255, 250, 240), (255, 239, 213), (255, 222, 173), (255, 215, 0), (255,
 class Map_2048:
 
     def __init__(self, size):
+        """
+        size: the size of the map
+        score: the score of the game
+        rotation: the orientation of the map, which will be the "LEFT" direction in key_move()
+        """
         self.size = size
         self.score = 0
         self.rotation = MAP_LEFT
@@ -26,15 +31,28 @@ class Map_2048:
             self.generate_new()
 
     def generate_new(self):
+        """generate new elements in the map """
+        # collect all blank positions
+        blank_position = [(i, j)
+                        for i in range(self.size)
+                        for j in range(self.size)
+                        if self.map[i][j] == 0]
+        
+        # if there is nowhere to add elements we return False
+        if len(blank_position) == 0:
+            return False
+
+        # generate -1, 0, 1, 2 uniformly, here -1, 0, 1 represents 1 while 2 represents 2
         new_element = random.randint(-1, 2)
         if new_element != 2:
             new_element = 1
-        while True:
-            x_pos = random.randint(0, self.size - 1)
-            y_pos = random.randint(0, self.size - 1)
-            if self.map[x_pos][y_pos] == 0:
-                self.map[x_pos][y_pos] = new_element
-                break;
+
+        # generate a random blank position
+        rand_pos = random.randint(0, len(blank_position) - 1)
+        x_pos = blank_position[rand_pos][0]
+        y_pos = blank_position[rand_pos][1]
+        self.map[x_pos][y_pos] = new_element
+        return True
         
     def set_element(self, i, j, new_value):
         if self.rotation == MAP_LEFT:
@@ -160,6 +178,8 @@ score_font = pygame.font.Font(None, int(SCORE_HEIGHT * 2 / 3))
 
 show(map, screen)
 
+clock = pygame.time.Clock()
+
 while True:
     for event in pygame.event.get():
         if event.type == QUIT:
@@ -174,4 +194,5 @@ while True:
                 map.move(MAP_LEFT)
             elif event.key == K_RIGHT:
                 map.move(MAP_RIGHT)
+            clock.tick(30)
             show(map, screen)
