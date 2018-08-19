@@ -169,16 +169,24 @@ def show(map, screen):
                 text_rect = number_text.get_rect()
                 text_rect.center = (PIXEL_SIZE * j + PIXEL_SIZE / 2, SCORE_HEIGHT + PIXEL_SIZE * i + PIXEL_SIZE / 2)
                 screen.blit(number_text, text_rect)
+
+    screen.blit(score_block, (0, 0))
+
+    # draw scoreboard
+    tip_text = tip_font.render(("Press 'r' to restart at any time; Press 'q' to QUIT! "), True, (106, 90, 205))
+    tip_rect = tip_text.get_rect()
+    tip_rect.center = (PIXEL_SIZE * MAP_SIZE / 2, SCORE_HEIGHT / 5)
+    screen.blit(tip_text, tip_rect)
     
     # draw scoreboard
-    screen.blit(score_block, (0, 0))
     if map.is_over():
         score_text = score_font.render(("Game Over! Your final score is ") + str(map.score), True, (106, 90, 205))
     else:
         score_text = score_font.render(("Score: ") + str(map.score), True, (106, 90, 205))
     score_rect = score_text.get_rect()
-    score_rect.center = (PIXEL_SIZE * MAP_SIZE / 2, SCORE_HEIGHT / 2)
+    score_rect.center = (PIXEL_SIZE * MAP_SIZE / 2, SCORE_HEIGHT * 7 / 10)
     screen.blit(score_text, score_rect)
+    
     pygame.display.update()
             
 pygame.init()
@@ -194,8 +202,11 @@ score_block.fill((245, 245, 245))
 # set the font size for numbers in the map
 number_font = pygame.font.Font(None, int(PIXEL_SIZE * 2 / 3))
 
+# set the font size for the tip
+tip_font = pygame.font.Font(None, int(SCORE_HEIGHT * 2 / 5))
+
 # set the font size for the score
-score_font = pygame.font.Font(None, int(SCORE_HEIGHT * 2 / 3))
+score_font = pygame.font.Font(None, int(SCORE_HEIGHT * 3 / 5))
 
 show(map, screen)
 
@@ -205,7 +216,10 @@ while True:
             pygame.quit()
             exit()
         elif event.type == KEYUP:
-            if event.key == K_DOWN:
+            if event.key == K_q:
+                pygame.quit()
+                exit()
+            elif event.key == K_DOWN:
                 map.move(MAP_DOWN)
             elif event.key == K_UP:
                 map.move(MAP_UP)
@@ -214,7 +228,6 @@ while True:
             elif event.key == K_RIGHT:
                 map.move(MAP_RIGHT)
             elif event.key == K_r:
-                if map.is_over():
-                    del map
-                    map = Map_2048(MAP_SIZE)
+                del map
+                map = Map_2048(MAP_SIZE)
             show(map, screen)
