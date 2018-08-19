@@ -30,6 +30,9 @@ class Map_2048:
         for _ in range(random.randint(2, 3)):
             self.generate_new()
 
+    def __del__(self):
+        del self.map
+
     def generate_new(self):
         """generate new elements in the map """
         # collect all blank positions
@@ -42,7 +45,7 @@ class Map_2048:
         if len(blank_position) == 0:
             return False
 
-        # generate -1, 0, 1, 2 uniformly, here -1, 0, 1 represents 1 while 2 represents 2
+        # generate -1, 0, 1, 2 uniformly, here "-1, 0, 1" represents 1 while "2" represents 2
         new_element = random.randint(-1, 2)
         if new_element != 2:
             new_element = 1
@@ -55,6 +58,7 @@ class Map_2048:
         return True
         
     def set_element(self, i, j, new_value):
+        """set the element value to new_value at (i, j) taken rotation into consideration"""
         if self.rotation == MAP_LEFT:
             self.map[i][j] = new_value
         elif self.rotation == MAP_RIGHT:
@@ -65,6 +69,7 @@ class Map_2048:
             self.map[self.size - 1 - j][i]= new_value
 
     def get_element(self, i, j):
+        """get the element at (i, j) taken rotation into consideration"""
         if self.rotation == MAP_LEFT:
             return self.map[i][j]
         elif self.rotation == MAP_RIGHT:
@@ -76,14 +81,20 @@ class Map_2048:
     
     def key_move(self):
         """assuming that we are moving to the left"""
+
         changed = False
+
+        # for each row
         for i in range(self.size):
+
+            # collecting all nonzero blocks to current_row
             current_row = []
             for j in range(self.size):
                 if self.get_element(i, j) != 0:
                     current_row.append(self.get_element(i, j))
             current_row.append(0)
-            
+
+            # combining consective identitical blocks, keep the result in new_row
             j = 0
             new_row = []
             while j < len(current_row) - 1:
@@ -94,7 +105,8 @@ class Map_2048:
                 else:
                     new_row.append(current_row[j])
                 j += 1
-                
+
+            # rewrite the row[i] in the map using data from new_row
             for j in range(len(new_row)):
                 if self.get_element(i, j) != new_row[j]:
                     self.set_element(i, j, new_row[j])
@@ -106,14 +118,21 @@ class Map_2048:
         return changed
 
     def is_over(self):
+        """check if there is any possible move"""
+
+        # check if there is any blank block
         for i in range(self.size):
             for j in range(self.size):
                 if self.map[i][j] == 0:
                     return False
+
+        # check if there is any consective identitical block horizontally
         for i in range(self.size):
             for j in range(self.size - 1):
                 if self.map[i][j] == self.map[i][j + 1]:
                     return False
+                
+        # check if there is any consective identitical block vertically
         for i in range(self.size - 1):
             for j in range(self.size):
                 if self.map[i][j] == self.map[i + 1][j]:
@@ -121,11 +140,13 @@ class Map_2048:
         return True
                 
     def move(self, symbol):
+        """call the key_move() function"""
         self.rotation = symbol
         if self.key_move():
             self.generate_new()
 
     def print_map(self):
+        """CUI output"""
         for i in range(self.size):
             print(self.map[i])
             
@@ -178,8 +199,6 @@ score_font = pygame.font.Font(None, int(SCORE_HEIGHT * 2 / 3))
 
 show(map, screen)
 
-clock = pygame.time.Clock()
-
 while True:
     for event in pygame.event.get():
         if event.type == QUIT:
@@ -194,4 +213,8 @@ while True:
                 map.move(MAP_LEFT)
             elif event.key == K_RIGHT:
                 map.move(MAP_RIGHT)
+            elif event.key == K_r:
+                if map.is_over():
+                    del map
+                    map = Map_2048(MAP_SIZE)
             show(map, screen)
